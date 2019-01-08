@@ -79,27 +79,15 @@ inline bool operator&(SDLogProfileMask a, SDLogProfileMask b)
 	return static_cast<int32_t>(a) & static_cast<int32_t>(b);
 }
 
-struct LoggerSubscription {
-	int fd[ORB_MULTI_MAX_INSTANCES]; ///< uorb subscription. The first fd is also used to store the interval if
-	/// not subscribed yet (-interval - 1)
-	const orb_metadata *metadata = nullptr;
-	uint8_t msg_ids[ORB_MULTI_MAX_INSTANCES];
+struct LoggerSubscription : public uORB::SubscriptionInterval {
 
-	LoggerSubscription() {}
+	uint8_t msg_ids{(uint8_t) - 1};
 
-	LoggerSubscription(int fd_, const orb_metadata *metadata_) :
-		metadata(metadata_)
-	{
-		fd[0] = fd_;
+	LoggerSubscription() = default;
 
-		for (int i = 1; i < ORB_MULTI_MAX_INSTANCES; i++) {
-			fd[i] = -1;
-		}
-
-		for (int i = 0; i < ORB_MULTI_MAX_INSTANCES; i++) {
-			msg_ids[i] = (uint8_t) - 1;
-		}
-	}
+	LoggerSubscription(const orb_metadata *meta, unsigned interval = 0, uint8_t instance = 0) :
+		uORB::SubscriptionInterval(meta, interval, instance)
+	{}
 };
 
 class Logger : public ModuleBase<Logger>
@@ -150,7 +138,7 @@ public:
 	 * and sets the file descriptor of LoggerSubscription accordingly
 	 * @return the newly added subscription on success, nullptr otherwise
 	 */
-	LoggerSubscription *add_topic(const orb_metadata *topic);
+	LoggerSubscription *add_topic(const orb_metadata *topic, unsigned interval = 0);
 
 	/**
 	 * request the logger thread to stop (this method does not block).
@@ -285,13 +273,13 @@ private:
 
 	void write_changed_parameters(LogType type);
 
-	inline bool copy_if_updated_multi(int sub_idx, int multi_instance, void *buffer, bool try_to_subscribe);
+	bool copy_if_updated_multi(int sub_idx, void *buffer, bool try_to_subscribe);
 
 	/**
 	 * Check if a topic instance exists and subscribe to it
 	 * @return true when topic exists and subscription successful
 	 */
-	bool try_to_subscribe_topic(LoggerSubscription &sub, int multi_instance);
+	bool try_to_subscribe_topic(LoggerSubscription &sub);
 
 	/**
 	 * Write exactly one ulog message to the logger and handle dropouts.
