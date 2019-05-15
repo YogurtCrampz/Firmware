@@ -42,6 +42,7 @@ px4_add_board(
 		navigator
 		position_estimator_inav
 		replay
+		sense_avoid
 		sensors
 		simulator
 		vmount

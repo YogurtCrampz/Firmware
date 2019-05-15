@@ -31,13 +31,26 @@
 #
 ############################################################################
 
+############################################################################
+## Tells Toolchain how to build the application
+##
+## The px4_add_module() method builds a static library from a module description. 
+## The MAIN block lists the name of the module - this registers the command with 
+## NuttX so that it can be called from the PX4 shell or SITL console.
+##
+## The px4_add_module() format is documented in Firmware/cmake/common/px4_base.cmake.
+############################################################################
+
 px4_add_module(
 	MODULE modules__sense_avoid
 	MAIN sense_avoid
-	COMPILE_FLAGS
+	STACK_MAIN 2000
 	SRCS
-		sense_avoid_main.cpp
-		sense_avoid_start.cpp
-		sense_avoid_module.cpp
+		sense_avoid.h
+		sense_avoid.c
+		sense_avoid_pid.c
+		sense_avoid_plant.c
+		sense_avoid_state_machine.c
 	DEPENDS
+		platforms__common
 	)

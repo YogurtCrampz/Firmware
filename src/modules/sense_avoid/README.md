@@ -1,0 +1,1 @@
+This module is to be run in assisted or guided mode and will be run continuously. It is used to detect a stationary object once it comes within range, and will then switch control over to   
